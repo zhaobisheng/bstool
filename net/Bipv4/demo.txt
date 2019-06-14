@@ -1,0 +1,31 @@
+func TcpSniff() {
+	fmt.Println("Hello World!")
+	tcp := BTcp.New()
+	go tcp.Start(Readhandle)
+	//tcp.Connect("tcp", "www.baidu.com:80")
+	//tcp.Connect("tcp", "127.0.0.1:2202")
+	tcp.Connect("tcp", "127.0.0.1:9897")
+	//tcp.Connect("tcp", "47.112.101.70:9897")
+	//go tcp.ReadLoop()
+	//str := `GET / HTTP/1.1
+	//Host: %s
+	//Connection: keep-alive
+	//Upgrade-Insecure-Requests: 1
+	//User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.131 Safari/537.36
+	//Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3
+	//Accept-Encoding: gzip, deflate, br
+	//Accept-Language: zh-CN,zh;q=0.9`
+	requestStr := fmt.Sprintf(str, tcp.Conn.RemoteAddr())
+	tcp.SendMsg("GET / HTTP/1.1 \r\nConnection: keep-alive\r\nUser-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.131 Safari/537.36\r\n")
+	tcp.SendMsg(requestStr)
+	fmt.Println(tcp.Status)
+	time.Sleep(100 * time.Second)
+
+	//tcp.SendMsg("init")
+	//time.Sleep(10 * time.Second)
+	tcp.Disconnect()
+}
+
+func Readhandle(data []byte) {
+	fmt.Println("Readhandle:", string(data))
+}
