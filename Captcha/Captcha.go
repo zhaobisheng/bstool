@@ -1,4 +1,4 @@
-package Utils
+package Captcha
 
 import (
 	crand "crypto/rand"
