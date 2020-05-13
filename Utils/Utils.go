@@ -132,3 +132,43 @@ func GetThisYearStart() int64 {
 	thisYearStr := fmt.Sprintf("%d", year)
 	return GetDateTimeStamp(thisYearStr)
 }
+
+func Decrypt(MsgSrc []byte) []byte {
+	length := len(MsgSrc)
+	msg := make([]byte, length)
+	for i := 0; i < length; i++ {
+		decode := ((MsgSrc[i] & 0x01) << 1) |
+			((MsgSrc[i] & 0x02) << 6) |
+			((MsgSrc[i] & 0x04) << 4) |
+			((MsgSrc[i] & 0x08) << 2) |
+			((MsgSrc[i] & 0x10) >> 2) |
+			((MsgSrc[i] & 0x20) >> 2) |
+			((MsgSrc[i] & 0x40) >> 2) |
+			((MsgSrc[i] & 0x80) >> 7)
+		msg[i] = decode
+		if MsgSrc[i] == 0 {
+			break
+		}
+	}
+	return msg
+}
+
+func Encrypt(MsgSrc []byte) []byte {
+	length := len(MsgSrc)
+	msg := make([]byte, length)
+	for i := 0; i < length; i++ {
+		encode := ((MsgSrc[i] & 0x01) << 7) |
+			((MsgSrc[i] & 0x02) >> 1) |
+			((MsgSrc[i] & 0x04) << 2) |
+			((MsgSrc[i] & 0x08) << 2) |
+			((MsgSrc[i] & 0x10) << 2) |
+			((MsgSrc[i] & 0x20) >> 2) |
+			((MsgSrc[i] & 0x40) >> 4) |
+			((MsgSrc[i] & 0x80) >> 6)
+		msg[i] = encode
+		if MsgSrc[i] == 0 {
+			break
+		}
+	}
+	return msg
+}

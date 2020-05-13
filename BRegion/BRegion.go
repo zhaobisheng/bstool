@@ -46,7 +46,12 @@ func (region *MyRegion) CheckChinaIP(ip string) bool {
 func (region *MyRegion) GetIPDetails(ip string) (IpInfo, error) {
 	ipInfo, err := region.RegionDB.MemorySearch(ip)
 	if err != nil {
-		return nil, error
+		return ipInfo, err
 	}
 	return ipInfo, nil
+}
+
+func GetCityInfo(ip string) (IpInfo, error) {
+	//return region.RegionDB.MemorySearch(ip)
+	return myRegion.GetIPDetails(ip)
 }

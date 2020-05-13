@@ -4,9 +4,11 @@ import (
 	"errors"
 	"fmt"
 	"net"
-	"nodeServer/Utils"
+	"os"
 	"sync"
 	"time"
+
+	"github.com/bsTool/Utils"
 )
 
 var t *TcpClient
@@ -44,7 +46,7 @@ func (t *TcpClient) Connect(protocol, addr string) error {
 		fmt.Println("Connect-error:", err)
 		return err
 	} else {
-		fmt.Println(t.Conn.LocalAddr(), "-", t.Conn.RemoteAddr())
+		//fmt.Println(t.Conn.LocalAddr(), "-", t.Conn.RemoteAddr())
 		t.Status = true
 		//go t.ReadLoop()
 		//go t.WriteLoop()
@@ -60,16 +62,18 @@ func (t *TcpClient) Disconnect() error {
 
 func (t *TcpClient) ReadLoop() {
 	for {
-		var data = make([]byte, 512)
+		var data = make([]byte, 1024)
 		bufLen, err := t.Conn.Read(data[:])
-		if bufLen > 0 {
-			if err == nil {
+		//if bufLen > 0 {
+		if err == nil {
+			if bufLen > 0 {
 				t.Lock.RLock()
 				t.Read <- data[:bufLen]
 				t.Lock.RUnlock()
-			} else {
-				fmt.Println(t.Conn.RemoteAddr(), " read error:", err)
 			}
+		} else {
+			fmt.Println(t.Conn.RemoteAddr(), " read error:", err)
+			os.Exit(1)
 		}
 	}
 }
