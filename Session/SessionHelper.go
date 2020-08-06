@@ -4,7 +4,6 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 
-	//"fmt"
 	"io"
 	"net/http"
 	"net/url"
@@ -15,11 +14,10 @@ import (
 
 /*Session会话管理*/
 type SessionMgr struct {
-	mCookieName  string       //客户端cookie名称
-	mLock        sync.RWMutex //互斥(保证线程安全)
-	mMaxLifeTime int64        //垃圾回收时间
-
-	mSessions map[string]*Session //保存session的指针[sessionID] = session
+	mCookieName  string              //客户端cookie名称
+	mLock        sync.RWMutex        //互斥(保证线程安全)
+	mMaxLifeTime int64               //垃圾回收时间
+	mSessions    map[string]*Session //保存session的指针[sessionID] = session
 }
 
 //创建会话管理器(cookieName:在浏览器中cookie的名字;maxLifeTime:最长生命周期)
@@ -43,7 +41,7 @@ func (mgr *SessionMgr) StartSession(w http.ResponseWriter, r *http.Request) stri
 		defer mgr.mLock.Unlock()
 		newSessionID = url.QueryEscape(mgr.NewSessionID())
 		//存指针
-		var session *Session = &Session{mSessionID: newSessionID, mLastTimeAccessed: time.Now(), mValues: make(map[interface{}]interface{})}
+		var session *Session = &Session{BSessionID: newSessionID, BLastTimeAccessed: time.Now().Unix(), BValues: make(map[interface{}]interface{})}
 		mgr.mSessions[newSessionID] = session
 		//让浏览器cookie设置过期时间
 		cookie := http.Cookie{Name: mgr.mCookieName, Value: newSessionID, Path: "/", HttpOnly: true, MaxAge: int(mgr.mMaxLifeTime)}
@@ -85,7 +83,7 @@ func (mgr *SessionMgr) Set(sessionID string, key interface{}, value interface{})
 	defer mgr.mLock.Unlock()
 
 	if session, ok := mgr.mSessions[sessionID]; ok {
-		session.mValues[key] = value
+		session.BValues[key] = value
 	}
 }
 
@@ -95,7 +93,7 @@ func (mgr *SessionMgr) Get(sessionID string, key interface{}) (interface{}, bool
 	defer mgr.mLock.RUnlock()
 
 	if session, ok := mgr.mSessions[sessionID]; ok {
-		if val, ok := session.mValues[key]; ok {
+		if val, ok := session.BValues[key]; ok {
 			return val, ok
 		}
 	}
@@ -108,8 +106,8 @@ func (mgr *SessionMgr) Del(sessionID string, key interface{}) bool {
 	mgr.mLock.RLock()
 	defer mgr.mLock.RUnlock()
 	if session, ok := mgr.mSessions[sessionID]; ok {
-		if _, ok := session.mValues[key]; ok {
-			delete(session.mValues, key)
+		if _, ok := session.BValues[key]; ok {
+			delete(session.BValues, key)
 			return true
 		}
 		return true
@@ -128,7 +126,14 @@ func (mgr *SessionMgr) GetSessionIDList() []string {
 		sessionIDList = append(sessionIDList, k)
 	}
 
-	return sessionIDList[0:len(sessionIDList)]
+	return sessionIDList //[0:len(sessionIDList)]
+}
+
+//所有session数据
+func (mgr *SessionMgr) GetSessionData() map[string]*Session {
+	mgr.mLock.RLock()
+	defer mgr.mLock.RUnlock()
+	return mgr.mSessions
 }
 
 //判断Cookie的合法性（每进入一个页面都需要判断合法性）
@@ -146,7 +151,7 @@ func (mgr *SessionMgr) GetSessionID(w http.ResponseWriter, r *http.Request) stri
 	sessionID := cookie.Value
 
 	if session, ok := mgr.mSessions[sessionID]; ok {
-		session.mLastTimeAccessed = time.Now() //判断合法性的同时，更新最后的访问时间
+		session.BLastTimeAccessed = time.Now().Unix() //判断合法性的同时，更新最后的访问时间
 		return sessionID
 	}
 
@@ -154,15 +159,15 @@ func (mgr *SessionMgr) GetSessionID(w http.ResponseWriter, r *http.Request) stri
 }
 
 //更新最后访问时间
-func (mgr *SessionMgr) GetLastAccessTime(sessionID string) time.Time {
+func (mgr *SessionMgr) GetLastAccessTime(sessionID string) int64 {
 	mgr.mLock.RLock()
 	defer mgr.mLock.RUnlock()
 
 	if session, ok := mgr.mSessions[sessionID]; ok {
-		return session.mLastTimeAccessed
+		return session.BLastTimeAccessed
 	}
 
-	return time.Now()
+	return time.Now().Unix()
 }
 
 //GC回收
@@ -172,7 +177,7 @@ func (mgr *SessionMgr) GC() {
 
 	for sessionID, session := range mgr.mSessions {
 		//删除超过时限的session
-		if session.mLastTimeAccessed.Unix()+mgr.mMaxLifeTime < time.Now().Unix() {
+		if session.BLastTimeAccessed+mgr.mMaxLifeTime < time.Now().Unix() {
 			delete(mgr.mSessions, sessionID)
 		}
 	}
@@ -191,10 +196,20 @@ func (mgr *SessionMgr) NewSessionID() string {
 	return base64.URLEncoding.EncodeToString(b)
 }
 
+//从数据看读取Session
+func (mgr *SessionMgr) SetSession(last_time int64, newSessionID string, value map[interface{}]interface{}) bool {
+
+	mgr.mLock.Lock()
+	defer mgr.mLock.Unlock()
+	var session *Session = &Session{BSessionID: newSessionID, BLastTimeAccessed: last_time, BValues: value}
+	mgr.mSessions[newSessionID] = session
+	return true
+}
+
 //——————————————————————————
 /*会话*/
 type Session struct {
-	mSessionID        string                      //唯一id
-	mLastTimeAccessed time.Time                   //最后访问时间
-	mValues           map[interface{}]interface{} //其它对应值(保存用户所对应的一些值，比如用户权限之类)
+	BSessionID        string                      //唯一id
+	BLastTimeAccessed int64                       //最后访问时间
+	BValues           map[interface{}]interface{} //其它对应值(保存用户所对应的一些值，比如用户权限之类)
 }

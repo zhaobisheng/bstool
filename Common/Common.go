@@ -75,7 +75,7 @@ func Base64_decode(dec string) string {
 	if err == nil {
 		return string(buf)
 	} else {
-		return err.Error()
+		return ""
 	}
 }
 

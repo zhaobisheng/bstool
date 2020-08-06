@@ -33,6 +33,10 @@ func MD5(str string) string {
 	return md5str
 }
 
+func base64_encodeByte() {
+	//base64.StdEncoding.
+}
+
 func Base64_encode(src string) string {
 	return base64.StdEncoding.EncodeToString([]byte(src))
 }
@@ -46,6 +50,10 @@ func Base64_decode(dec string) string {
 	}
 }
 
+func GetTimeDir() string {
+	return time.Now().Format("2006-01-02")
+}
+
 func TodayTimestamp() int64 {
 	now := time.Now()
 	timestamp := now.Unix() - int64(now.Second()) - int64((60 * now.Minute())) - int64((3600 * now.Hour()))
@@ -56,6 +64,10 @@ func HourTimestamp() int64 {
 	timestamp := now.Unix() - int64(now.Second()) - int64((60 * now.Minute()))
 	return timestamp
 }
+
+/*func Date2Timestamp() {
+
+}*/
 
 func GetDateTimeStamp(date string) int64 {
 	loc, _ := time.LoadLocation("Local")

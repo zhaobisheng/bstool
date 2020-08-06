@@ -15,8 +15,12 @@ func HttpRequest(url, method string, data []byte, header map[string]string) (res
 	if err != nil {
 		fmt.Println("err:", err)
 	}
-	for key, val := range header {
-		request.Header.Set(key, val)
+	if header != nil {
+		for key, val := range header {
+			request.Header.Set(key, val)
+		}
+	} else {
+		request.Header.Set("Content-Type", "application/json")
 	}
 	//request.Header.Set("Content-Type", "application/json")
 	//request.Header.Set("Connection", "Keep-Alive")

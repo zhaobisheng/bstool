@@ -43,8 +43,8 @@ func Connect(conf *MysqlConfig) *sql.DB {
 	if err != nil {
 		fmt.Println("Mysql Connect Failure!!!")
 	}
-	db.SetMaxIdleConns(30)
-	db.SetMaxOpenConns(100)
+	db.SetMaxIdleConns(50)
+	db.SetMaxOpenConns(130)
 	db.SetConnMaxLifetime(time.Second * 300)
 	db.Ping()
 	return db
@@ -65,6 +65,54 @@ func (mysqlStruct *MysqlStruct) GetConnection() *sql.DB {
 	return mysqlStruct.Conn
 }
 
+func Fetch_Array(sqlStr string, param ...interface{}) ([]map[string]string, error) {
+	return mysqlStruct.Fetch_array(sqlStr, param)
+}
+
+func (mysqlStruct *MysqlStruct) Fetch_array(sqlStr string, param ...interface{}) ([]map[string]string, error) { //获取多行数据
+	var rows2 *sql.Rows
+	var err error
+	db := mysqlStruct.GetConnection()
+	if param != nil {
+		rows2, err = db.Query(sqlStr, param...)
+	} else {
+		rows2, err = db.Query(sqlStr)
+	}
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
+	result := make([]map[string]string, 0)
+	//defer rows2.Close()
+	defer func() {
+		rows2.Close()
+		db.Close()
+	}()
+	/*if rows2 == nil {
+		return nil,
+	}*/
+	cols, err := rows2.Columns()
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
+	vals := make([][]byte, len(cols))
+	scans := make([]interface{}, len(cols))
+	for k, _ := range vals {
+		scans[k] = &vals[k]
+	}
+	for rows2.Next() {
+		rows2.Scan(scans...)
+		row := make(map[string]string)
+		for k, v := range vals {
+			key := cols[k]
+			row[key] = string(v)
+		}
+		result = append(result, row)
+	}
+	return result, nil
+}
+
 func Fetch_map(sqlStr string, param ...interface{}) (map[int]map[string]string, error) {
 	return mysqlStruct.Fetch_map(sqlStr, param...)
 }
@@ -83,7 +131,11 @@ func (mysqlStruct *MysqlStruct) Fetch_map(sqlStr string, param ...interface{}) (
 		return nil, err
 	}
 	result := make(map[int]map[string]string)
-	defer rows2.Close()
+	//defer rows2.Close()
+	defer func() {
+		rows2.Close()
+		db.Close()
+	}()
 	/*if rows2 == nil {
 		return nil,
 	}*/
@@ -130,7 +182,11 @@ func (mysqlStruct *MysqlStruct) Fetch_one(sqlStr string, param ...interface{}) (
 		return nil, err
 	}
 	result := make(map[string]string)
-	defer rows2.Close()
+	defer func() {
+		rows2.Close()
+		db.Close()
+	}()
+	//defer rows2.Close()
 	/*if rows2 == nil {
 		return nil
 	}*/
@@ -160,7 +216,11 @@ func SQL_query(sqlStr string, param ...interface{}) (int64, error) {
 func (mysqlStruct *MysqlStruct) SQL_query_error(sqlStr string, param ...interface{}) (int64, error) {
 	db := mysqlStruct.GetConnection()
 	stmt, err := db.Prepare(sqlStr)
-	defer stmt.Close()
+	//defer stmt.Close()
+	defer func() {
+		stmt.Close()
+		db.Close()
+	}()
 	if err != nil {
 		return 0, err
 	}
@@ -180,9 +240,17 @@ func SQL_insert(sqlStr string, param ...interface{}) (int64, error) {
 }
 
 func (mysqlStruct *MysqlStruct) SQL_insert_error(sqlStr string, param ...interface{}) (int64, error) {
+	/*defer func() {
+		if e := recover(); e != nil {
+			fmt.Println("func-SQL_insert_error-error:", e)
+		}
+	}()*/
 	db := mysqlStruct.GetConnection()
 	stmt, err := db.Prepare(sqlStr)
-	defer stmt.Close()
+	defer func() {
+		stmt.Close()
+		db.Close()
+	}()
 	if err != nil {
 		return 0, err
 	}
@@ -219,7 +287,10 @@ func (mysqlStruct *MysqlStruct) Fetch_one_int(sqlStr string, param ...interface{
 		return 0
 	}
 	//result := make(map[string]string)
-	defer rows2.Close()
+	defer func() {
+		rows2.Close()
+		db.Close()
+	}()
 	cols, err := rows2.Columns()
 	if err != nil {
 		fmt.Println("Fetch_one_int:", err, sqlStr)
@@ -265,7 +336,10 @@ func (mysqlStruct *MysqlStruct) Fetch_one_cell(sqlStr string, param ...interface
 		return ""
 	}
 	//result := make(map[string]string)
-	defer rows2.Close()
+	defer func() {
+		rows2.Close()
+		db.Close()
+	}()
 	cols, err := rows2.Columns()
 	if err != nil {
 		fmt.Println("Fetch_one_cell-Columns:", err, sqlStr)
