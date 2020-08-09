@@ -3,7 +3,9 @@ package Mysql
 import (
 	"database/sql"
 	"fmt"
+	"strings"
 
+	"runtime"
 	"strconv"
 	"time"
 
@@ -11,9 +13,13 @@ import (
 )
 
 var (
-	mysqlStruct *MysqlStruct
+	mysqlStruct       *MysqlStruct
+	conditionTemplate = " `%s`=? and "
 	//connMu      = sync.RWMutex{}
 )
+
+type SQLStruct struct {
+}
 
 type MysqlStruct struct {
 	Conn *sql.DB
@@ -65,8 +71,40 @@ func (mysqlStruct *MysqlStruct) GetConnection() *sql.DB {
 	return mysqlStruct.Conn
 }
 
+func TrimFlag(str, flagStr string) string {
+	if len(str) >= len(flagStr) {
+		index := strings.LastIndex(str, flagStr)
+		if index >= 0 {
+			return str[:index]
+		}
+	}
+	return str
+}
+
+func GenerateSQL(sql string, paramMap map[string]string) (string, []interface{}) {
+	//SELECT count(id) ` FROM `file_tree` where `type`=?
+	paramValArr := make([]interface{}, 0)
+	paramKeyArr := make([]interface{}, 0)
+	for paramKey, paramVal := range paramMap {
+		paramKeyArr = append(paramKeyArr, paramKey)
+		paramValArr = append(paramValArr, paramVal)
+	}
+	if len(paramValArr) == len(paramKeyArr) && len(paramKeyArr) > 0 {
+		sql += " where "
+		for _, key := range paramKeyArr {
+			sql += fmt.Sprintf(conditionTemplate, key)
+		}
+		sql = TrimFlag(sql, "and")
+	}
+	return sql, paramValArr
+}
+
+func GenerateInsertSQL() {
+
+}
+
 func Fetch_Array(sqlStr string, param ...interface{}) ([]map[string]string, error) {
-	return mysqlStruct.Fetch_array(sqlStr, param)
+	return mysqlStruct.Fetch_array(sqlStr, param...)
 }
 
 func (mysqlStruct *MysqlStruct) Fetch_array(sqlStr string, param ...interface{}) ([]map[string]string, error) { //获取多行数据
@@ -79,7 +117,8 @@ func (mysqlStruct *MysqlStruct) Fetch_array(sqlStr string, param ...interface{})
 		rows2, err = db.Query(sqlStr)
 	}
 	if err != nil {
-		fmt.Println(err)
+		_, file, line, _ := runtime.Caller(1)
+		fmt.Println(file, line, err)
 		return nil, err
 	}
 	result := make([]map[string]string, 0)
@@ -93,7 +132,8 @@ func (mysqlStruct *MysqlStruct) Fetch_array(sqlStr string, param ...interface{})
 	}*/
 	cols, err := rows2.Columns()
 	if err != nil {
-		fmt.Println(err)
+		_, file, line, _ := runtime.Caller(1)
+		fmt.Println(file, line, err)
 		return nil, err
 	}
 	vals := make([][]byte, len(cols))
@@ -127,7 +167,8 @@ func (mysqlStruct *MysqlStruct) Fetch_map(sqlStr string, param ...interface{}) (
 		rows2, err = db.Query(sqlStr)
 	}
 	if err != nil {
-		fmt.Println(err)
+		_, file, line, _ := runtime.Caller(1)
+		fmt.Println(file, line, err)
 		return nil, err
 	}
 	result := make(map[int]map[string]string)
@@ -141,7 +182,8 @@ func (mysqlStruct *MysqlStruct) Fetch_map(sqlStr string, param ...interface{}) (
 	}*/
 	cols, err := rows2.Columns()
 	if err != nil {
-		fmt.Println(err)
+		_, file, line, _ := runtime.Caller(1)
+		fmt.Println(file, line, err)
 		return nil, err
 	}
 	vals := make([][]byte, len(cols))
@@ -178,7 +220,8 @@ func (mysqlStruct *MysqlStruct) Fetch_one(sqlStr string, param ...interface{}) (
 		rows2, err = db.Query(sqlStr)
 	}
 	if err != nil {
-		fmt.Println(err)
+		_, file, line, _ := runtime.Caller(1)
+		fmt.Println(file, line, err)
 		return nil, err
 	}
 	result := make(map[string]string)
@@ -192,7 +235,8 @@ func (mysqlStruct *MysqlStruct) Fetch_one(sqlStr string, param ...interface{}) (
 	}*/
 	cols, err := rows2.Columns()
 	if err != nil {
-		fmt.Println(err)
+		_, file, line, _ := runtime.Caller(1)
+		fmt.Println(file, line, err)
 		return nil, err
 	}
 	vals := make([][]byte, len(cols))

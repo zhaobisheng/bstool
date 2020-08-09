@@ -54,6 +54,10 @@ func GetTimeDir() string {
 	return time.Now().Format("2006-01-02")
 }
 
+func GetTimeSecondDir() string {
+	return time.Now().Format("2006-01-02 15:04:05")
+}
+
 func TodayTimestamp() int64 {
 	now := time.Now()
 	timestamp := now.Unix() - int64(now.Second()) - int64((60 * now.Minute())) - int64((3600 * now.Hour()))
