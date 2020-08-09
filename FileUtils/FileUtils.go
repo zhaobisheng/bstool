@@ -19,3 +19,22 @@ func PathExists(path string) bool {
 	}
 	return false
 }
+
+func CreateDirIfNotExist(dirName string) bool {
+	if !PathExists(dirName) {
+		err := os.MkdirAll(dirName, os.ModePerm)
+		if err != nil {
+			return false
+		}
+	}
+	return true
+}
+
+func CopyFile(srcFile, newFile string) error {
+	fileData, err := ioutil.ReadFile(srcFile)
+	if err != nil {
+		return err
+	}
+	err = ioutil.WriteFile(newFile, fileData, os.ModePerm)
+	return err
+}
