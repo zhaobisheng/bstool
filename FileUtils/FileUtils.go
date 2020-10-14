@@ -1,6 +1,7 @@
 package FileUtils
 
 import (
+	"io/ioutil"
 	"os"
 	"path/filepath"
 )

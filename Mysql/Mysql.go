@@ -56,14 +56,29 @@ func Connect(conf *MysqlConfig) *sql.DB {
 	return db
 }
 
+func CheckPing(conn *sql.DB) bool {
+	err := conn.Ping()
+	if err == nil {
+		return true
+	} /*else {
+		fmt.Println("********** PING ERROR: " + err.Error())
+	}*/
+	return false
+}
+
 func (mysqlStruct *MysqlStruct) GetConnection() *sql.DB {
 	//connMu.RLock()
 	if mysqlStruct.Conn != nil {
-		err := mysqlStruct.Conn.Ping()
-		if err == nil {
+		if CheckPing(mysqlStruct.Conn) {
 			return mysqlStruct.Conn
 		} else {
-			fmt.Println("********** PING ERROR: " + err.Error())
+			mysqlStruct.Conn = Connect(mysqlStruct.Conf)
+			err := mysqlStruct.Conn.Ping()
+			if err == nil {
+				return mysqlStruct.Conn
+			} else {
+				fmt.Println("********** PING ERROR: " + err.Error())
+			}
 		}
 	}
 	mysqlStruct.Conn = Connect(mysqlStruct.Conf)

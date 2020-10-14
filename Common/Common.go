@@ -12,6 +12,13 @@ import (
 	"time"
 )
 
+var tipsFormat = "%v:%v "
+
+func GetRandInt64(num int64) int64 {
+	rand.Seed(time.Now().UnixNano())
+	return rand.Int63n(num)
+}
+
 func CheckErr(err error) {
 	if err != nil {
 		panic(err)
@@ -191,6 +198,22 @@ func GetCallerPosName() string {
 	fileStr := filepath.Base(file)
 	Pos := fmt.Sprintf(" %s:%d-%s ", fileStr, line, funcname)
 	return Pos
+}
+
+func GetMyCallerForDepth(depth int, getFile bool) string {
+	myCaller := ""
+	pc, file, line, ok := runtime.Caller(depth)
+	if ok {
+		from := ""
+		if getFile {
+			from = file
+		} else {
+			f := runtime.FuncForPC(pc)
+			from = f.Name()
+		}
+		myCaller = fmt.Sprintf(tipsFormat, from, line)
+	}
+	return myCaller
 }
 
 func MergeMap(dst, src map[string]interface{}, index int) map[string]interface{} {

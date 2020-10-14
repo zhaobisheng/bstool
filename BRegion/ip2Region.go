@@ -84,7 +84,6 @@ func getIpInfo(cityId int64, line []byte) IpInfo {
 }
 
 func New(path string) (*Ip2Region, error) {
-
 	file, err := os.Open(path)
 	if err != nil {
 		return nil, err
