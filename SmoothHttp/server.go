@@ -208,7 +208,7 @@ func (srv *Server) getTCPListenerFdList() ([]uintptr, error) {
 	var files = make([]uintptr, len(srv.LinsterList))
 	for index, val := range srv.LinsterList {
 		file, err := val.(*net.TCPListener).File()
-		fmt.Println("val:", val, "file.fd:", file.Fd())
+		//fmt.Println("val:", val, "file.fd:", file.Fd())
 		if err != nil {
 			return nil, err
 		}

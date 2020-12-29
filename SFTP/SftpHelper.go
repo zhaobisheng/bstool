@@ -1,4 +1,4 @@
-package BFtp
+package BSFtp
 
 import (
 	"fmt"

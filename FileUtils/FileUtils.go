@@ -6,6 +6,16 @@ import (
 	"path/filepath"
 )
 
+func FileList(path string) []os.FileInfo {
+	dir_list, e := ioutil.ReadDir(path)
+	if e != nil {
+		//log.Fatalln("read dir error ", e.Error())
+		//Logger.Errorln("read dir error ", e.Error())
+		return nil
+	}
+	return dir_list
+}
+
 func GetFileDir(path string) string {
 	return filepath.Dir(path)
 }

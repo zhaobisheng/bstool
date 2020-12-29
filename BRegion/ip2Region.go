@@ -56,7 +56,17 @@ func (ip IpInfo) GetCity() string {
 }
 
 func (ip IpInfo) ToCity() string {
-	return ip.Province + ip.City
+	localtion := ""
+	if ip.Province != "0" {
+		localtion = ip.Province
+	}
+	if ip.City != "0" {
+		localtion += ip.City
+	}
+	if localtion == "" {
+		localtion = ip.Country
+	}
+	return localtion
 }
 
 func (ip IpInfo) GetISP() string {
