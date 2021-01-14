@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"reflect"
 	"strings"
 	"time"
 )
@@ -13,6 +14,29 @@ func CheckErr(err error) {
 	if err != nil {
 		panic(err)
 	}
+}
+
+func InArray(data interface{}, array []interface{}) bool {
+	for _, arrNum := range array {
+		if arrNum == data {
+			return true
+		}
+	}
+	return false
+}
+
+func GetParamString(data interface{}) string {
+	if CheckVariableType(data, "string") {
+		return data.(string)
+	}
+	return ""
+}
+
+func CheckVariableType(variable interface{}, varType string) bool {
+	if variable == nil {
+		return false
+	}
+	return strings.EqualFold(reflect.TypeOf(variable).String(), varType)
 }
 
 func GetClientIP(RemoteAddr string) (string, error) {
