@@ -1,12 +1,30 @@
 package XlsxUtils
 
 import (
-	"github.com/bsTool/FileUtils"
+	"bytes"
 	"os"
 	"strconv"
 
+	"github.com/zhaobisheng/bsTool/FileUtils"
+
 	"github.com/360EntSecGroup-Skylar/excelize"
 )
+
+func GenerateCommonXlsxStream(sheetName string, title []string, dataMap [][]string) (*bytes.Buffer, error) {
+	f := excelize.NewFile()
+	f.SetSheetName("Sheet1", sheetName)
+	mainRowStart := 2
+	titleStart := 'A'
+	for k, v := range title {
+		f.SetCellValue(sheetName, string(titleStart+rune(k))+"1", v)
+	}
+	for index, dataRow := range dataMap {
+		for colIndex, data := range dataRow {
+			f.SetCellValue(sheetName, string(titleStart+rune(colIndex))+strconv.Itoa(mainRowStart+index), data)
+		}
+	}
+	return f.WriteToBuffer()
+}
 
 func GenerateCommonXlsx(newFilePath, sheetName string, title []string, dataMap [][]interface{}) error {
 	f := excelize.NewFile()

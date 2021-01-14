@@ -51,6 +51,13 @@ func (ip IpInfo) String() string {
 	return strconv.FormatInt(ip.CityId, 10) + "|" + ip.Country + "|" + ip.Region + "|" + ip.Province + "|" + ip.City + "|" + ip.ISP
 }
 
+func (ip IpInfo) GetCountry() string {
+	if !strings.Contains(ip.Country, "0") {
+		return ip.Country
+	}
+	return "保留地址"
+}
+
 func (ip IpInfo) GetProvince() string {
 	if !strings.Contains(ip.Province, "0") {
 		return ip.Province
@@ -68,7 +75,7 @@ func (ip IpInfo) GetCity() string {
 func (ip IpInfo) ToCity() string {
 	localtion := ip.GetProvince() + ip.GetCity()
 	if localtion == "" {
-		localtion = ip.Country
+		localtion = ip.GetCountry()
 	}
 	return localtion
 }
