@@ -93,9 +93,9 @@ func HourTimestamp() int64 {
 	return timestamp
 }
 
-/*func Date2Timestamp() {
-
-}*/
+func GetNowTimestamp() int64 {
+	return time.Now().Unix()
+}
 
 func GetDateTimeStamp(date string) int64 {
 	loc, _ := time.LoadLocation("Local")
