@@ -2,6 +2,7 @@ package Utils
 
 import (
 	"crypto/md5"
+	"crypto/sha256"
 	"encoding/base64"
 	"errors"
 	"fmt"
@@ -23,6 +24,13 @@ func InArray(data interface{}, array []interface{}) bool {
 		}
 	}
 	return false
+}
+
+func GetParamFloat(data interface{}) float64 {
+	if CheckVariableType(data, "float64") {
+		return data.(float64)
+	}
+	return 0
 }
 
 func GetParamString(data interface{}) string {
@@ -49,6 +57,18 @@ func GetClientIP(RemoteAddr string) (string, error) {
 		err = errors.New("get clientIP fail!")
 	}
 	return clientIP, err
+}
+
+func GetSha256(strSrc []byte) string {
+	hash := sha256.Sum256(strSrc)
+	sha256Str := fmt.Sprintf("%x", hash)
+	return sha256Str
+}
+
+func GetMD5(strSrc []byte) string {
+	has := md5.Sum(strSrc)
+	md5str := fmt.Sprintf("%x", has)
+	return md5str
 }
 
 func MD5(str string) string {

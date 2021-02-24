@@ -35,7 +35,7 @@ func CloseIPdb(ip string) {
 func (region *MyRegion) CheckChinaIP(ip string) bool {
 	ipInfo, err := region.RegionDB.MemorySearch(ip)
 	if err != nil {
-		return true
+		return false
 	}
 	if ipInfo.Country != "中国" {
 		return false

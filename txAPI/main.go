@@ -19,34 +19,21 @@ import (
 
 const apiUrl = "cns.api.qcloud.com/v2/index.php"
 
-func main() {
-	if len(os.Args) < 4 {
-		fmt.Println("Usage:\r\n./txDomain AccessKeyID AccessKeySecret funwan.cn ")
-		os.Exit(0)
-	}
-	AccessKeyID := os.Args[1]
-	AccessKeySecret := os.Args[2]
-	domain := os.Args[3]
-	rs := TXRecordList(AccessKeyID, AccessKeySecret)
-	fmt.Println("\r\n" + rs)
-}
-
-func TXRecordCreate(AccessKeyID, AccessKeySecret,domain string) string {
+func TXRecordCreate(AccessKeyID, AccessKeySecret, domain string) string {
 	rand.Seed(time.Now().UnixNano())
 	data := map[string]string{
 		"Nonce":     fmt.Sprintf("%d", rand.Int31()),
 		"SecretId":  AccessKeyID,
 		"Timestamp": fmt.Sprintf("%d", time.Now().Unix()),
 		"Action":    "RecordList",
-		"domain":    domain,//"funwan.cn",
+		"domain":    domain, //"funwan.cn",
 		"offset":    "0",
 		"length":    "20",
 		"Region":    "ap-guangzhou",
 	}
 
-
 	sortQueryString := SortedString(data)
-	stringToSign := "POST" + apiUrl + "?" + sortQueryString[1:] 
+	stringToSign := "POST" + apiUrl + "?" + sortQueryString[1:]
 	//fmt.Println(stringToSign)
 	Signature := Sign(stringToSign, AccessKeySecret)
 	//url := fmt.Sprintf("https://%sSignature=%s%s", apiUrl, Signature, sortQueryString)

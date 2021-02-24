@@ -9,6 +9,15 @@ import (
 	"time"
 )
 
+func HandleParam(tempMap map[string]string) []byte {
+	urlParam := ""
+	for key, val := range tempMap {
+		urlParam += key + "=" + val + "&"
+	}
+	urlParam = TrimFlag(urlParam, "&")
+	return []byte(urlParam)
+}
+
 func HttpRequest(url, method string, data []byte, header map[string]string) (resp *http.Response, err error) {
 	client := &http.Client{}
 	request, err := http.NewRequest(method, url, bytes.NewReader(data))
@@ -22,8 +31,6 @@ func HttpRequest(url, method string, data []byte, header map[string]string) (res
 	} else {
 		request.Header.Set("Content-Type", "application/json")
 	}
-	//request.Header.Set("Content-Type", "application/json")
-	//request.Header.Set("Connection", "Keep-Alive")
 	resp, err = client.Do(request)
 	return resp, err
 }
@@ -59,4 +66,15 @@ var r = rand.New(rand.NewSource(time.Now().UnixNano()))
 
 func GetRandomUserAgent() string {
 	return userAgent[r.Intn(len(userAgent))]
+}
+
+func TrimFlag(str, symbol string) string {
+	newStr := str
+	if len(newStr) > len(symbol) {
+		flagLen := len(symbol)
+		if str[len(str)-flagLen:] == symbol {
+			newStr = str[:len(str)-flagLen]
+		}
+	}
+	return newStr
 }
