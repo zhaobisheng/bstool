@@ -6,6 +6,8 @@ import (
 	"io/ioutil"
 	"math/rand"
 	"net/http"
+	"os"
+	"strings"
 	"time"
 )
 
@@ -45,6 +47,27 @@ func RequestResult(url, method string, data []byte, header map[string]string) (s
 		return "", err
 	}
 	return string(buf), nil
+}
+
+func DownloadFile(url, method, downPath string, data []byte, header map[string]string) error {
+	response, err := HttpRequest(url, method, data, header)
+	if err != nil {
+		return err
+	}
+	buf, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		return err
+	}
+	err = ioutil.WriteFile(downPath+"/"+GetFilename(url), buf, os.ModePerm)
+	return err
+}
+
+func GetFilename(targetUrl string) string {
+	index := strings.LastIndex(targetUrl, "/")
+	if index > 0 {
+		return targetUrl[index+1:]
+	}
+	return fmt.Sprintf("%v", time.Now().Unix())
 }
 
 var userAgent = [...]string{"Mozilla/5.0 (compatible, MSIE 10.0, Windows NT, DigExt)",
