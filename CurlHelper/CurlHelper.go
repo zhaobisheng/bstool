@@ -62,6 +62,18 @@ func DownloadFile(url, method, downPath string, data []byte, header map[string]s
 	return err
 }
 
+func GetFileData(url, method string, data []byte, header map[string]string) []byte {
+	response, err := HttpRequest(url, method, data, header)
+	if err != nil {
+		return []byte("")
+	}
+	buf, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		return []byte("")
+	}
+	return buf
+}
+
 func GetFilename(targetUrl string) string {
 	index := strings.LastIndex(targetUrl, "/")
 	if index > 0 {
