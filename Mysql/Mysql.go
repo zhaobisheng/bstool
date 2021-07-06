@@ -9,6 +9,8 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/zhaobisheng/bsTool/Config"
+
 	_ "github.com/go-sql-driver/mysql"
 )
 
@@ -33,6 +35,20 @@ type MysqlConfig struct {
 	Password string `root`
 	Port     int    `3306`
 	Charset  string `utf-8`
+}
+
+func Init(confName string) {
+	Config.InitConfig(confName)
+	port, _ := strconv.Atoi(Config.ReadKey("mysql", "port"))
+	conf := &MysqlConfig{
+		Host:     Config.ReadKey("mysql", "host"),
+		Database: Config.ReadKey("mysql", "dbname"),
+		Username: Config.ReadKey("mysql", "username"),
+		Password: Config.ReadKey("mysql", "password"),
+		Port:     port,
+		Charset:  Config.ReadKey("mysql", "charset"),
+	}
+	InitConnect(conf)
 }
 
 func InitConnect(conf *MysqlConfig) *MysqlStruct {
