@@ -67,7 +67,7 @@ func Connect(conf *MysqlConfig) *sql.DB {
 	}
 	db.SetMaxIdleConns(50)
 	db.SetMaxOpenConns(130)
-	db.SetConnMaxLifetime(time.Second * 300)
+	db.SetConnMaxLifetime(time.Second * 3600)
 	db.Ping()
 	return db
 }
