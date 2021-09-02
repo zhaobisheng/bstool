@@ -65,8 +65,8 @@ func Connect(conf *MysqlConfig) *sql.DB {
 	if err != nil {
 		fmt.Println("Mysql Connect Failure!!!")
 	}
-	db.SetMaxIdleConns(50)
-	db.SetMaxOpenConns(130)
+	db.SetMaxIdleConns(100)
+	db.SetMaxOpenConns(250)
 	db.SetConnMaxLifetime(time.Second * 3600)
 	db.Ping()
 	return db
