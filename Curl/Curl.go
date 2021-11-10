@@ -2,10 +2,12 @@ package Curl
 
 import (
 	"bytes"
+	"crypto/tls"
 	"fmt"
 	"io/ioutil"
 	"math/rand"
 	"net/http"
+	"net/url"
 	"os"
 	"strings"
 	"time"
@@ -20,11 +22,22 @@ func HandleParam(tempMap map[string]string) []byte {
 	return []byte(urlParam)
 }
 
-func HttpRequest(url, method string, data []byte, header map[string]string) (resp *http.Response, err error) {
-	client := &http.Client{CheckRedirect: func(req *http.Request, via []*http.Request) error {
-		return http.ErrUseLastResponse
-	}}
-	request, err := http.NewRequest(method, url, bytes.NewReader(data))
+func HttpRequest(turl, method, proxy string, data []byte, header map[string]string) (resp *http.Response, err error) {
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true,
+		}, // 使用环境变量的代理
+		Proxy: http.ProxyFromEnvironment,
+	}
+	if proxy != "" {
+		proxyUrl, err := url.Parse(proxy)
+		if err == nil { // 使用传入代理
+			tr.Proxy = http.ProxyURL(proxyUrl)
+			fmt.Println("Usage-proxy:", proxyUrl)
+		}
+	}
+	client := &http.Client{Transport: tr}
+	request, err := http.NewRequest(method, turl, bytes.NewReader(data))
 	if err != nil {
 		fmt.Println("err:", err)
 	}
@@ -39,8 +52,8 @@ func HttpRequest(url, method string, data []byte, header map[string]string) (res
 	return resp, err
 }
 
-func RequestResult(url, method string, data []byte, header map[string]string) (string, error) {
-	response, err := HttpRequest(url, method, data, header)
+func RequestResult(url, method, proxy string, data []byte, header map[string]string, gzip bool) (string, error) {
+	response, err := HttpRequest(url, method, proxy, data, header)
 	if err != nil {
 		return "", err
 	}
@@ -48,11 +61,18 @@ func RequestResult(url, method string, data []byte, header map[string]string) (s
 	if err != nil {
 		return "", err
 	}
+	if gzip {
+		realBuf, err := ParseGzip(buf)
+		if err != nil {
+			return string(buf), err
+		}
+		return string(realBuf), nil
+	}
 	return string(buf), nil
 }
 
-func DownloadFile(url, method, downPath string, data []byte, header map[string]string) error {
-	response, err := HttpRequest(url, method, data, header)
+func DownloadFile(url, method, downPath, proxy string, data []byte, header map[string]string) error {
+	response, err := HttpRequest(url, method, proxy, data, header)
 	if err != nil {
 		return err
 	}
@@ -64,8 +84,8 @@ func DownloadFile(url, method, downPath string, data []byte, header map[string]s
 	return err
 }
 
-func GetFileData(url, method string, data []byte, header map[string]string) []byte {
-	response, err := HttpRequest(url, method, data, header)
+func GetFileData(url, method, proxy string, data []byte, header map[string]string) []byte {
+	response, err := HttpRequest(url, method, proxy, data, header)
 	if err != nil {
 		return []byte("")
 	}

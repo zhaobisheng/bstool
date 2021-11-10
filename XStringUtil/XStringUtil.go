@@ -1,10 +1,15 @@
 package XStringUtil
 
 import (
+	"bytes"
 	"fmt"
 	"strconv"
 	"strings"
 )
+
+func BytesCombine(pBytes ...[]byte) []byte {
+	return bytes.Join(pBytes, []byte(""))
+}
 
 func ParseInt(str string) int64 {
 	intData, err := strconv.ParseInt(str, 10, 64) //strconv.Atoi(str)

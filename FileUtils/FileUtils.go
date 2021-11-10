@@ -113,3 +113,11 @@ func CopyFile(srcFile, newFile string) error {
 	err = ioutil.WriteFile(newFile, fileData, os.ModePerm)
 	return err
 }
+
+func GetFilename(targetUrl string) string {
+	index := strings.LastIndex(targetUrl, "/")
+	if index > 0 {
+		return targetUrl[index+1:]
+	}
+	return targetUrl
+}
