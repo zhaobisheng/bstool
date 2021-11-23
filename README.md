@@ -16,4 +16,4 @@
 - [日志](https://www.godoc.org/github.com/zhaobisheng/bsTool/Logger)
 - [工厂模式](https://www.godoc.org/github.com/zhaobisheng/bsTool/Factory)
 - [查ip所属地](https://www.godoc.org/github.com/zhaobisheng/bsTool/BRegion)
-- [查ip所属地](https://www.godoc.org/github.com/zhaobisheng/bsTool/BDown)
+- [断点续传](https://www.godoc.org/github.com/zhaobisheng/bsTool/BDown)
