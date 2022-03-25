@@ -43,6 +43,9 @@ func HttpRequest(turl, method, proxy string, data []byte, header map[string]stri
 	}
 	if header != nil {
 		for key, val := range header {
+			if strings.EqualFold(key, "host") {
+				request.Host = val
+			}
 			request.Header.Set(key, val)
 		}
 	} else {

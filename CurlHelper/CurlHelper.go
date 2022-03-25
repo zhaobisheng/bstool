@@ -2,13 +2,17 @@ package Curl
 
 import (
 	"bytes"
+	"crypto/tls"
 	"fmt"
 	"io/ioutil"
 	"math/rand"
 	"net/http"
+	"net/url"
 	"os"
 	"strings"
 	"time"
+
+	"golang.org/x/net/proxy"
 )
 
 func HandleParam(tempMap map[string]string) []byte {
@@ -20,11 +24,20 @@ func HandleParam(tempMap map[string]string) []byte {
 	return []byte(urlParam)
 }
 
-func HttpRequest(url, method string, data []byte, header map[string]string) (resp *http.Response, err error) {
-	client := &http.Client{CheckRedirect: func(req *http.Request, via []*http.Request) error {
-		return http.ErrUseLastResponse
+//"127.0.0.1:10808"
+func HttpSock5(turl, method, addr string, data []byte, header map[string]string) (resp *http.Response, err error) {
+	dialer, err := proxy.SOCKS5("tcp", addr, nil, proxy.Direct)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "can't connect to the proxyUrl:", err)
+		os.Exit(1)
+	}
+	httpTransport := &http.Transport{TLSClientConfig: &tls.Config{
+		InsecureSkipVerify: true,
 	}}
-	request, err := http.NewRequest(method, url, bytes.NewReader(data))
+	client := &http.Client{Transport: httpTransport}
+	// set our socks5 as the dialer
+	httpTransport.Dial = dialer.Dial
+	request, err := http.NewRequest(method, turl, bytes.NewReader(data))
 	if err != nil {
 		fmt.Println("err:", err)
 	}
@@ -39,8 +52,47 @@ func HttpRequest(url, method string, data []byte, header map[string]string) (res
 	return resp, err
 }
 
-func RequestResult(url, method string, data []byte, header map[string]string) (string, error) {
-	response, err := HttpRequest(url, method, data, header)
+func HttpRequest(turl, method, proxyUrl string, data []byte, header map[string]string) (resp *http.Response, err error) {
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true,
+		}, // 使用环境变量的代理
+		Proxy: http.ProxyFromEnvironment,
+	}
+	if proxyUrl != "" {
+		proxyUrl, err := url.Parse(proxyUrl)
+		if err == nil { // 使用传入代理
+			tr.Proxy = http.ProxyURL(proxyUrl)
+			fmt.Println("Usage-proxyUrl:", proxyUrl)
+		}
+	}
+	client := &http.Client{Transport: tr}
+	request, err := http.NewRequest(method, turl, bytes.NewReader(data))
+	if err != nil {
+		fmt.Println("err:", err)
+	}
+	if header != nil {
+		for key, val := range header {
+			if strings.EqualFold(key, "host") {
+				request.Host = val
+			}
+			request.Header.Set(key, val)
+		}
+	} else {
+		request.Header.Set("Content-Type", "application/json")
+	}
+	resp, err = client.Do(request)
+	return resp, err
+}
+
+func RequestResult(url, method, proxyUrl string, data []byte, header map[string]string, sock5 bool) (string, error) {
+	var response *http.Response
+	var err error
+	if sock5 {
+		response, err = HttpSock5(url, method, proxyUrl, data, header)
+	} else {
+		response, err = HttpRequest(url, method, proxyUrl, data, header)
+	}
 	if err != nil {
 		return "", err
 	}
@@ -51,8 +103,8 @@ func RequestResult(url, method string, data []byte, header map[string]string) (s
 	return string(buf), nil
 }
 
-func DownloadFile(url, method, downPath string, data []byte, header map[string]string) error {
-	response, err := HttpRequest(url, method, data, header)
+func DownloadFile(url, method, downPath, proxyUrl string, data []byte, header map[string]string) error {
+	response, err := HttpRequest(url, method, proxyUrl, data, header)
 	if err != nil {
 		return err
 	}
@@ -64,8 +116,8 @@ func DownloadFile(url, method, downPath string, data []byte, header map[string]s
 	return err
 }
 
-func GetFileData(url, method string, data []byte, header map[string]string) []byte {
-	response, err := HttpRequest(url, method, data, header)
+func GetFileData(url, method, proxyUrl string, data []byte, header map[string]string) []byte {
+	response, err := HttpRequest(url, method, proxyUrl, data, header)
 	if err != nil {
 		return []byte("")
 	}
