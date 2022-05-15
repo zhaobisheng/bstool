@@ -91,6 +91,7 @@ func TodayTimestamp() int64 {
 	timestamp := now.Unix() - int64(now.Second()) - int64((60 * now.Minute())) - int64((3600 * now.Hour()))
 	return timestamp
 }
+
 func HourTimestamp() int64 {
 	now := time.Now()
 	timestamp := now.Unix() - int64(now.Second()) - int64((60 * now.Minute()))

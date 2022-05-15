@@ -7,6 +7,22 @@ import (
 	"os"
 )
 
+func Sha1Str(sum string) string {
+	ha := sha1.New()
+	ha.Write([]byte(sum))
+	//bs := ha.Sum(nil)
+	sha1 := fmt.Sprintf("%x", ha.Sum(nil))
+	return sha1
+}
+
+func Sha1Byte(sum []byte) string {
+	ha := sha1.New()
+	ha.Write(sum)
+	//bs := ha.Sum(nil)
+	sha1 := fmt.Sprintf("%x", ha.Sum(nil))
+	return sha1
+}
+
 func Sha1sum(tFile string) string {
 	ha := sha1.New()
 	f, err := os.Open(tFile)

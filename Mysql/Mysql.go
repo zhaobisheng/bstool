@@ -33,19 +33,19 @@ type MysqlConfig struct {
 	Database string `dbname`
 	Username string `root`
 	Password string `root`
-	Port     int    `3306`
+	Port     string `3306`
 	Charset  string `utf-8`
 }
 
 func Init(confName string) {
 	Config.InitConfig(confName)
-	port, _ := strconv.Atoi(Config.ReadKey("mysql", "port"))
+	//port, _ := strconv.Atoi(Config.ReadKey("mysql", "port"))
 	conf := &MysqlConfig{
 		Host:     Config.ReadKey("mysql", "host"),
 		Database: Config.ReadKey("mysql", "dbname"),
 		Username: Config.ReadKey("mysql", "username"),
 		Password: Config.ReadKey("mysql", "password"),
-		Port:     port,
+		Port:     Config.ReadKey("mysql", "port"),
 		Charset:  Config.ReadKey("mysql", "charset"),
 	}
 	InitConnect(conf)
@@ -60,13 +60,13 @@ func InitConnect(conf *MysqlConfig) *MysqlStruct {
 }
 
 func Connect(conf *MysqlConfig) *sql.DB {
-	ConfStr := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=%s", conf.Username, conf.Password, conf.Host, conf.Port, conf.Database, conf.Charset)
+	ConfStr := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=%s", conf.Username, conf.Password, conf.Host, conf.Port, conf.Database, conf.Charset)
 	db, err := sql.Open("mysql", ConfStr)
 	if err != nil {
 		fmt.Println("Mysql Connect Failure!!!")
 	}
-	db.SetMaxIdleConns(100)
-	db.SetMaxOpenConns(250)
+	db.SetMaxIdleConns(200)
+	db.SetMaxOpenConns(400)
 	db.SetConnMaxLifetime(time.Second * 3600)
 	db.Ping()
 	return db
@@ -156,7 +156,7 @@ func (mysqlStruct *MysqlStruct) Fetch_array(sqlStr string, param ...interface{})
 	//defer rows2.Close()
 	defer func() {
 		rows2.Close()
-		db.Close()
+		//db.Close()
 	}()
 	/*if rows2 == nil {
 		return nil,
@@ -206,7 +206,7 @@ func (mysqlStruct *MysqlStruct) Fetch_map(sqlStr string, param ...interface{}) (
 	//defer rows2.Close()
 	defer func() {
 		rows2.Close()
-		db.Close()
+		//db.Close()
 	}()
 	/*if rows2 == nil {
 		return nil,
@@ -258,7 +258,7 @@ func (mysqlStruct *MysqlStruct) Fetch_one(sqlStr string, param ...interface{}) (
 	result := make(map[string]string)
 	defer func() {
 		rows2.Close()
-		db.Close()
+		//db.Close()
 	}()
 	//defer rows2.Close()
 	/*if rows2 == nil {
@@ -294,7 +294,7 @@ func (mysqlStruct *MysqlStruct) SQL_query_error(sqlStr string, param ...interfac
 	//defer stmt.Close()
 	defer func() {
 		stmt.Close()
-		db.Close()
+		//db.Close()
 	}()
 	if err != nil {
 		return 0, err
@@ -324,7 +324,7 @@ func (mysqlStruct *MysqlStruct) SQL_insert_error(sqlStr string, param ...interfa
 	stmt, err := db.Prepare(sqlStr)
 	defer func() {
 		stmt.Close()
-		db.Close()
+		//db.Close()
 	}()
 	if err != nil {
 		return 0, err
@@ -364,7 +364,7 @@ func (mysqlStruct *MysqlStruct) Fetch_one_int(sqlStr string, param ...interface{
 	//result := make(map[string]string)
 	defer func() {
 		rows2.Close()
-		db.Close()
+		//db.Close()
 	}()
 	cols, err := rows2.Columns()
 	if err != nil {
@@ -413,7 +413,7 @@ func (mysqlStruct *MysqlStruct) Fetch_one_cell(sqlStr string, param ...interface
 	//result := make(map[string]string)
 	defer func() {
 		rows2.Close()
-		db.Close()
+		//db.Close()
 	}()
 	cols, err := rows2.Columns()
 	if err != nil {
