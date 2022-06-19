@@ -57,7 +57,8 @@ func HttpRequest(turl, method, proxyUrl string, data []byte, header map[string]s
 		TLSClientConfig: &tls.Config{
 			InsecureSkipVerify: true,
 		}, // 使用环境变量的代理
-		Proxy: http.ProxyFromEnvironment,
+		Proxy:             http.ProxyFromEnvironment,
+		DisableKeepAlives: true,
 	}
 	if proxyUrl != "" {
 		proxyUrl, err := url.Parse(proxyUrl)
