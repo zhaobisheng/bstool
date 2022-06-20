@@ -6,7 +6,7 @@ import (
 	"os"
 	"path"
 
-	"github.com/bsTool/vendors/goftp"
+	"github.com/bstool/vendors/goftp"
 )
 
 func FtpConnect(user, password, host, port, path string) (*goftp.FTP, error) {

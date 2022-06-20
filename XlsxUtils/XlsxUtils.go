@@ -5,7 +5,7 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/zhaobisheng/bsTool/FileUtils"
+	"github.com/zhaobisheng/bstool/FileUtils"
 
 	"github.com/360EntSecGroup-Skylar/excelize"
 )

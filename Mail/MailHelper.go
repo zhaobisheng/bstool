@@ -11,7 +11,7 @@ import (
 	"path/filepath"
 	"strconv"
 
-	"github.com/bsTool/Logger"
+	"github.com/bstool/Logger"
 
 	"github.com/go-gomail/gomail"
 )

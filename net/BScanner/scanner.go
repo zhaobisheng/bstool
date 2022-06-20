@@ -1,7 +1,7 @@
 package BScanner
 
 import (
-	"bsTool/net/Bipv4"
+	"bstool/net/Bipv4"
 	"errors"
 	"fmt"
 	"net"

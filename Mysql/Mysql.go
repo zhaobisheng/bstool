@@ -9,7 +9,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/zhaobisheng/bsTool/Config"
+	"github.com/zhaobisheng/bstool/Config"
 
 	_ "github.com/go-sql-driver/mysql"
 )

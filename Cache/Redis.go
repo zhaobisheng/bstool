@@ -1,7 +1,7 @@
 package Cache
 
 import (
-	"bsTool/Config"
+	"bstool/Config"
 
 	"github.com/garyburd/redigo/redis"
 )

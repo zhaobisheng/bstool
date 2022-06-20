@@ -1,6 +1,6 @@
-// bsTool project doc.go
+// bstool project doc.go
 
 /*
-bsTool document
+bstool document
 */
 package main

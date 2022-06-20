@@ -8,7 +8,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/bsTool/Utils"
+	"github.com/bstool/Utils"
 )
 
 var t *TcpClient
